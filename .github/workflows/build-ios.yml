@@ -26,13 +26,26 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore AzureDeploymentsApp.csproj
     
-    - name: Build iOS app
+    - name: Build iOS app (unsigned)
       run: |
         dotnet build AzureDeploymentsApp.csproj -f net8.0-ios -c Release
     
-    # Note: To create an actual IPA that can be wrapped with Intune,
-    # you need to add code signing with your Apple Developer certificates.
-    # For now, this workflow builds the app to verify it compiles.
+    - name: Create unsigned IPA for testing
+      run: |
+        # Create Payload directory
+        mkdir -p Payload
+        
+        # Copy .app bundle to Payload
+        cp -R bin/Release/net8.0-ios/iossimulator-x64/AzureDeploymentsApp.app Payload/
+        
+        # Create .ipa (it's just a zip file)
+        zip -r AzureDeploymentsApp-unsigned.ipa Payload
+        
+        echo "✅ Created unsigned IPA for testing wrapper workflow"
+        echo "⚠️  This IPA cannot be installed on real devices - signing required"
+    
+    # Note: To create a SIGNED IPA that can be installed on real devices and deployed via Intune,
+    # you need to add code signing with your Apple Developer certificates (see steps below).
     
     # Uncomment and configure these steps when you have signing certificates:
     # - name: Import signing certificate
@@ -64,6 +77,13 @@ jobs:
     #       /p:CodesignKey="iPhone Distribution" \
     #       /p:CodesignProvision="YourProvisioningProfileName"
     
+    - name: Upload unsigned IPA artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-app-unsigned-ipa
+        path: AzureDeploymentsApp-unsigned.ipa
+        retention-days: 7
+    
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       with:
@@ -71,10 +91,10 @@ jobs:
         path: bin/Release/net8.0-ios/
         retention-days: 7
     
-    # When signing is configured, upload the IPA:
-    # - name: Upload IPA artifact
+    # When signing is configured, this will create a SIGNED IPA:
+    # - name: Upload signed IPA artifact
     #   uses: actions/upload-artifact@v4
     #   with:
-    #     name: ios-app-ipa
+    #     name: ios-app-signed-ipa
     #     path: bin/Release/net8.0-ios/ios-arm64/publish/*.ipa
     #     retention-days: 30
