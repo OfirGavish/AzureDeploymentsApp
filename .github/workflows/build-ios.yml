@@ -28,9 +28,7 @@ jobs:
         echo "Using SDK from global.json"
     
     - name: Install MAUI workload
-      run: |
-        # Use .NET 8 SDK explicitly
-        dotnet workload install maui --sdk-version 8.0.404
+      run: dotnet workload install maui
     
     - name: Restore dependencies
       run: dotnet restore AzureDeploymentsApp.csproj
