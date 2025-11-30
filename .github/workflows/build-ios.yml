@@ -1,0 +1,80 @@
+name: Build iOS IPA
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  build-ios:
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
+    
+    - name: Install MAUI workload
+      run: dotnet workload install maui
+    
+    - name: Restore dependencies
+      run: dotnet restore AzureDeploymentsApp.csproj
+    
+    - name: Build iOS app
+      run: |
+        dotnet build AzureDeploymentsApp.csproj -f net8.0-ios -c Release
+    
+    # Note: To create an actual IPA that can be wrapped with Intune,
+    # you need to add code signing with your Apple Developer certificates.
+    # For now, this workflow builds the app to verify it compiles.
+    
+    # Uncomment and configure these steps when you have signing certificates:
+    # - name: Import signing certificate
+    #   env:
+    #     CERTIFICATE_BASE64: ${{ secrets.IOS_CERTIFICATE_BASE64 }}
+    #     CERTIFICATE_PASSWORD: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+    #   run: |
+    #     echo $CERTIFICATE_BASE64 | base64 --decode > certificate.p12
+    #     security create-keychain -p actions build.keychain
+    #     security default-keychain -s build.keychain
+    #     security unlock-keychain -p actions build.keychain
+    #     security import certificate.p12 -k build.keychain -P $CERTIFICATE_PASSWORD -T /usr/bin/codesign
+    #     security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k actions build.keychain
+    
+    # - name: Import provisioning profile
+    #   env:
+    #     PROVISIONING_PROFILE_BASE64: ${{ secrets.IOS_PROVISIONING_PROFILE_BASE64 }}
+    #   run: |
+    #     mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+    #     echo $PROVISIONING_PROFILE_BASE64 | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+    
+    # - name: Build and create IPA
+    #   run: |
+    #     dotnet publish AzureDeploymentsApp.csproj \
+    #       -f net8.0-ios \
+    #       -c Release \
+    #       /p:ArchiveOnBuild=true \
+    #       /p:RuntimeIdentifier=ios-arm64 \
+    #       /p:CodesignKey="iPhone Distribution" \
+    #       /p:CodesignProvision="YourProvisioningProfileName"
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-build
+        path: bin/Release/net8.0-ios/
+        retention-days: 7
+    
+    # When signing is configured, upload the IPA:
+    # - name: Upload IPA artifact
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: ios-app-ipa
+    #     path: bin/Release/net8.0-ios/ios-arm64/publish/*.ipa
+    #     retention-days: 30
