@@ -61,9 +61,10 @@
 		<PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="8.0.100" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="8.0.1" />
 		
-		<!-- OLD Intune SDK (version 18.x) - simulates customer's legacy app -->
+		<!-- OLD Intune SDK (version 17.x) - simulates customer's legacy app -->
 		<!-- This represents apps built before the January 2026 deadline -->
-		<PackageReference Include="Microsoft.Intune.MAM.Xamarin.iOS" Version="18.9.1" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
+		<!-- Version 18.x doesn't exist on NuGet, using 17.7.3 which is the latest old SDK -->
+		<PackageReference Include="Microsoft.Intune.MAM.Xamarin.iOS" Version="17.7.3" Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'" />
 	</ItemGroup>
 
 </Project>
