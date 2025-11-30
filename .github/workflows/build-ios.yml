@@ -15,23 +15,22 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Remove .NET 10 SDK to avoid conflicts
-      run: |
-        # Remove .NET 10 SDK that comes with macos-latest
-        sudo rm -rf /usr/local/share/dotnet/sdk/10.*
-    
     - name: Setup .NET 8
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: '8.0.404'
+        global-json-file: global.json
     
     - name: Verify .NET version
       run: |
         dotnet --version
         dotnet --list-sdks
+        echo "Using SDK from global.json"
     
     - name: Install MAUI workload
-      run: dotnet workload install maui --skip-manifest-update
+      run: |
+        # Use .NET 8 SDK explicitly
+        dotnet workload install maui --sdk-version 8.0.404
     
     - name: Restore dependencies
       run: dotnet restore AzureDeploymentsApp.csproj

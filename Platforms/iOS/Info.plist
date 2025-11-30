@@ -28,14 +28,5 @@
 	</array>
 	<key>XSAppIconAssets</key>
 	<string>Assets.xcassets/appicon.appiconset</string>
-	<!-- OLD Intune SDK Configuration (version 18.x) -->
-	<!-- This simulates a legacy app with old SDK that needs new wrapper -->
-	<key>IntuneMAMSettings</key>
-	<dict>
-		<key>ADALClientId</key>
-		<string>d4ebce55-015a-49b5-a083-be4d1f0e8f5e</string>
-		<key>ADALRedirectUri</key>
-		<string>msauth.com.companyname.azuredeploymentsapp://auth</string>
-	</dict>
 </dict>
 </plist>
