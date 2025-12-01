@@ -42,13 +42,24 @@ jobs:
         # Create Payload directory
         mkdir -p Payload
         
+        # Find the .app bundle (could be arm64 or x64 depending on runner)
+        APP_PATH=$(find bin/Release/net8.0-ios -name "AzureDeploymentsApp.app" -type d | head -n 1)
+        
+        if [ -z "$APP_PATH" ]; then
+          echo "❌ Error: Could not find .app bundle"
+          find bin/Release/net8.0-ios -type d
+          exit 1
+        fi
+        
+        echo "📦 Found app bundle at: $APP_PATH"
+        
         # Copy .app bundle to Payload
-        cp -R bin/Release/net8.0-ios/iossimulator-x64/AzureDeploymentsApp.app Payload/
+        cp -R "$APP_PATH" Payload/
         
         # Create .ipa (it's just a zip file)
         zip -r AzureDeploymentsApp-unsigned.ipa Payload
         
-        echo "✅ Created unsigned IPA for testing wrapper workflow"
+        echo "✅ Created unsigned IPA for testing"
         echo "⚠️  This IPA cannot be installed on real devices - signing required"
     
     # Note: To create a SIGNED IPA that can be installed on real devices and deployed via Intune,
